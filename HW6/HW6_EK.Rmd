@@ -1,0 +1,177 @@
+---
+title: 'Homework #6'
+author: "Ezgi Karaesmen"
+date: "November 3, 2016"
+output: pdf_document
+---
+
+---
+title: "Project 1"
+author: "Ezgi Karaesmen"
+date: "October 5, 2016"
+header-includes:
+   - \usepackage{rotating}
+   - \usepackage{pdflscape}
+   - \usepackage{longtable}
+   - \usepackage{geometry}
+   - \usepackage[table,xcdraw]{xcolor}
+output: pdf_document
+
+
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(ggplot2)
+knitr::opts_chunk$set(cache=T,eval=F, echo=F, message=FALSE)
+setwd("~/Box Sync/Stat Anal of Genetic Data/Project2/Description_Data/")
+```
+
+
+
+\section*{Chapter 13}
+
+\subsection*{Problem 13.1}
+
+Clark's algorithm was applied to determine haplotypes of 6 individuals consisting of 3 diallelic SNPs.
+
+```{r, eval=F}
+df <- data.frame(Individual = sort(rep(c(1:6), 2)) ,  Haplotype = rep(c(1,2), 6)  ,
+                 SNP1 = c(rep("G", 9), "A", "G", "A") ,
+                 SNP2 = c(rep("C", 3), "A", "C", rep("A", 3), rep("C", 3), "A") ,
+                 SNP3 = c(rep("A", 5), rep("G", 3), "A", rep("G", 3) ))
+kable(df, align = "c", format = "latex")
+```
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+\hline
+Individual & Haplotype & SNP1 & SNP2 & SNP3\\
+\hline
+1 & 1 & G & C & A\\
+  & 2 & G & C & A\\
+\hline
+2 & 1 & G & C & A\\
+ & 2 & G & A & A\\
+\hline
+3 & 1 & G & C & A\\
+ & 2 & G & A & G\\
+\hline
+4 & 1 & G & A & G\\
+ & 2 & G & A & G\\
+\hline
+5 & 1 & G & C & A\\
+ & 2 & A & C & G\\
+\hline
+6 & 1 & G & C & G\\
+ & 2 & A & A & G\\
+\hline
+\end{tabular}
+\end{center}
+
+1. Step 1: Identify all unambiguous haplotypes. Consider these haplotypes "resolved".
+
+Resolved haplotypes: $h_1 = h(GCA) \; ; \; h_2 = h(GAA) \; ; \; h_3 = h(GAG)$
+
+2. Step 2: Determine whether any of the resolved haplotypes could be one of the haplotypes in a still unresolved individual. If not, STOP. Otherwise continue.
+
+The given haplotypes for individual 6 are $h(GCG)$ and $h(AAG)$. However, haplotypes for the same individual can also be determined as $h(ACG)$ and $h(GAG)$ without losing information. Theoretically, the algorithm is designed to search for possible "resolved haplotypes" in each individual and should be able to handle such cases, individual 6's haplotypes were changed in the table given below to ease the demonstration.
+
+```{r, eval=F}
+df <- data.frame(Individual = sort(rep(c(1:6), 2)) ,  Haplotype = rep(c(1,2), 6)  ,
+                 SNP1 = c(rep("G", 9), "A", "G", "A") ,
+                 SNP2 = c(rep("C", 3), "A", "C", rep("A", 3), rep("C", 3), "A") ,
+                 SNP3 = c(rep("A", 5), rep("G", 3), "A", rep("G", 3) ), 
+                 Status = c(rep("resolved", 9), rep("not resolved", 3)), 
+                 `Assigned haplotype` = c( rep("$h_1$", 3) ,  "$h_2$", "$h_1$",  rep("$h_3$", 3), "$h_1$", rep(" ", 3)) )
+kable(df, align = "c", format = "latex", escape=F)
+```
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|c}
+\hline
+Individual & Haplotype & SNP1 & SNP2 & SNP3 & Status & Assigned.haplotype\\
+\hline
+1 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & C & A & resolved & $h_1$\\
+\hline
+2 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & A & A & resolved & $h_2$\\
+\hline
+3 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+4 & 1 & G & A & G & resolved & $h_3$\\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+5 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & A & C & G & not resolved & \\
+\hline
+6 & 1 & A & C & G & not resolved & \\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+\end{tabular}
+\end{center}
+
+3. Step 3: Each time a resolved haplotype is identified as one of the possible alleles in an unresolved individual, identify the complement and consider this newly identified homologue resolved. Go back to Step 2.
+
+Newly resolved haplotype: $h_4 = h(ACG)$
+
+4. Return to Step 2
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|c}
+\hline 
+Individual & Haplotype & SNP1 & SNP2 & SNP3 & Status & Assigned.haplotype\\
+\hline
+1 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & C & A & resolved & $h_1$\\
+\hline
+2 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & A & A & resolved & $h_2$\\
+\hline
+3 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+4 & 1 & G & A & G & resolved & $h_3$\\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+5 & 1 & G & C & A & resolved & $h_1$\\
+ & 2 & A & C & G & resolved & $h_4$\\
+\hline
+6 & 1 & A & C & G & resolved & $h_4$\\
+ & 2 & G & A & G & resolved & $h_3$\\
+\hline
+\end{tabular}
+\end{center}
+
+STOP.
+
+Upon applying the Clark's algorithm 4 haplotypes were identified: \
+ $h_1 = h(GCA) \; ; \; h_2 = h(GAA) \; ; \; h_3 = h(GAG) \; ; \; h_4 = h(ACG)$
+
+\section*{Extra Problem}
+
+Considering a haplotype block made up of 4 SNPs and every SNP is diallelic, $2^4 = 16$ haplotypes are possible.
+
+There are only the following 8 haplotypes occurring in a population. Is there any redundancy, i.e., can we ignore one or more SNPs without losing any information?
+
+In order to answer this question, the given haplotypes were sorted and color coded. It can easily be seen that SNP2 and SNP3 are in perfect LD and for every A allele in SNP2, T allele is observed in SNP4 and consequently for every C allele in SNP2, A allele is observed in SNP4. Therefore, we can conclude that SNP4 can be ignored without losing information.
+
+\begin{table}[h]
+\centering
+\label{my-label}
+\begin{tabular}{ccccc}
+
+Haplotype & SNP1                      & SNP2                      & SNP3                      & SNP4                      \\
+3         & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{ACDF9B}A & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{FFFC9E}T \\
+1         & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{ACDF9B}A & \cellcolor[HTML]{F0B2E3}G & \cellcolor[HTML]{FFFC9E}T \\
+7         & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{ACDF9B}A \\
+4         & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{F0B2E3}G & \cellcolor[HTML]{ACDF9B}A \\
+8         & \cellcolor[HTML]{FFFC9E}T & \cellcolor[HTML]{ACDF9B}A & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{FFFC9E}T \\
+6         & \cellcolor[HTML]{FFFC9E}T & \cellcolor[HTML]{ACDF9B}A & \cellcolor[HTML]{F0B2E3}G & \cellcolor[HTML]{FFFC9E}T \\
+5         & \cellcolor[HTML]{FFFC9E}T & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{ACDF9B}A \\
+2         & \cellcolor[HTML]{FFFC9E}T & \cellcolor[HTML]{B4C5F7}C & \cellcolor[HTML]{F0B2E3}G & \cellcolor[HTML]{ACDF9B}A
+\end{tabular}
+\end{table}
+
